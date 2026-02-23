@@ -3,13 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gold Ledger - Cloud</title>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
+<title>Gold Ledger</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-/* ... (Your original CSS styles remain unchanged) ... */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#3d3826;border-radius:3px}
 input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none}input[type=number]{-moz-appearance:textfield}
@@ -92,20 +88,6 @@ input[type="checkbox"]{accent-color:#c9a84c;cursor:pointer;width:15px;height:15p
 <body>
 <div id="app"></div>
 <script>
-// ═══ FIREBASE INITIALIZATION ═══
-const firebaseConfig = {
-  apiKey: "AIzaSyBV-tLFXYildOMBkr2vh2P3qA8hwAG_Vgk",
-  authDomain: "bluegoose-59135.firebaseapp.com",
-  projectId: "bluegoose-59135",
-  storageBucket: "bluegoose-59135.firebasestorage.app",
-  messagingSenderId: "452348728428",
-  appId: "1:452348728428:web:88dbda046b46e0ba533449",
-  measurementId: "G-WEFGER0B8T"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
 // ═══ CONSTANTS ═══
 const KP={"9K":.375,"10K":.4167,"12K":.5,"14K":.5833,"18K":.75,"22K":.9167,"24K":1},KO=Object.keys(KP);
 const SO=["","Ok","Under Weight","Under Karat","Not Gold","Refunded"],TOZ=31.1035;
@@ -113,21 +95,16 @@ const SC={"":{b:"transparent",t:"#6b6554",r:"#2a2820"},"Ok":{b:"#14532d",t:"#4ad
 const I={plus:'<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',arc:'<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg>',res:'<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 1 2.636 6.364"/><path d="M3 21v-5h5"/></svg>',edt:'<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',sav:'<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>',can:'<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',sea:'<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',exp:'<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',tra:'<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>',inv:'<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',ref:'<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>',chk:'<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>'};
 
 // ═══ STATE ═══
-let recs=[], invs=[], refs=[];
+let recs=JSON.parse(localStorage.getItem('gr2')||'[]');
+let invs=JSON.parse(localStorage.getItem('gi2')||'[]');
+let refs=JSON.parse(localStorage.getItem('grf2')||'[]');
 let vm='active',showForm=false,showExport=false,eid=null,eb=null,sel=new Set(),sq='',sof='dp',sod='desc';
 let ef='',et='',es='active',modal=null;
 let nin=parseInt(localStorage.getItem('gni2')||'1000');
 let nr={on:'',dp:'',dr:'',sp:'',g:'',k:'10K',pp:'',tn:'',st:'',nt:''};
 
-// ═══ CLOUD DATA LOADING ═══
-function initData() {
-  db.collection("records").onSnapshot(s => { recs = s.docs.map(d => ({id:d.id, ...d.data()})); R(); });
-  db.collection("invoices").onSnapshot(s => { invs = s.docs.map(d => ({id:d.id, ...d.data()})); R(); });
-  db.collection("refunds").onSnapshot(s => { refs = s.docs.map(d => ({id:d.id, ...d.data()})); R(); });
-}
-
 // ═══ HELPERS ═══
-function sv(){ localStorage.setItem('gni2',String(nin)); }
+function sv(){localStorage.setItem('gr2',JSON.stringify(recs));localStorage.setItem('gi2',JSON.stringify(invs));localStorage.setItem('grf2',JSON.stringify(refs));localStorage.setItem('gni2',String(nin))}
 function gid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 function td(){return new Date().toISOString().split('T')[0]}
 function net(){return new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true,timeZone:'America/New_York'})}
@@ -140,6 +117,7 @@ function badge(s){if(!s)return'<span style="color:#6b6554;font-size:12px">—</s
 function gfilt(){return recs.filter(function(r){if(vm==='active'?r.ar:!r.ar)return false;if(!sq.trim())return true;var q=sq.toLowerCase();return[r.on,r.dp,r.dr,r.sp,r.g,r.k,r.pp,r.np,r.cm,r.tn,r.st,r.nt].some(function(v){return(v||'').toString().toLowerCase().indexOf(q)>=0})})}
 function gsort(f){return f.slice().sort(function(a,b){var av=a[sof]||'',bv=b[sof]||'';if('sp g pp np cm'.indexOf(sof)>=0){av=parseFloat(av)||0;bv=parseFloat(bv)||0}return av<bv?(sod==='asc'?-1:1):av>bv?(sod==='asc'?1:-1):0})}
 
+// ═══ ONLY UPDATE CALC FIELDS (90% and commission) — no re-render ═══
 function updateCalcFields(){
   var sp=document.getElementById('nr-sp'),gr=document.getElementById('nr-g'),pp=document.getElementById('nr-pp'),kk=document.getElementById('nr-k');
   if(!sp)return;
@@ -153,81 +131,94 @@ function updateCalcFields(){
 function addRec(){
   var on=document.getElementById('nr-on').value.trim();
   if(!on)return;
-  var sp=document.getElementById('nr-sp').value, g=document.getElementById('nr-g').value, k=document.getElementById('nr-k').value, pp=document.getElementById('nr-pp').value;
+  var sp=document.getElementById('nr-sp').value;
+  var g=document.getElementById('nr-g').value;
+  var k=document.getElementById('nr-k').value;
+  var pp=document.getElementById('nr-pp').value;
   var c=c90(sp,g,k,pp);
-  db.collection("records").add({on:on,dp:document.getElementById('nr-dp').value||td(),dr:document.getElementById('nr-dr').value||'',sp:sp,g:g,k:k,pp:pp,np:c.np,cm:c.cm,tn:document.getElementById('nr-tn').value,st:document.getElementById('nr-st').value,nt:document.getElementById('nr-nt').value,ar:false,ii:null,ri:null,ts:net()});
-  showForm=false;
+  recs.push({id:gid(),on:on,dp:document.getElementById('nr-dp').value||td(),dr:document.getElementById('nr-dr').value||'',sp:sp,g:g,k:k,pp:pp,np:c.np,cm:c.cm,tn:document.getElementById('nr-tn').value,st:document.getElementById('nr-st').value,nt:document.getElementById('nr-nt').value,ar:false,ii:null,ri:null,ts:net()});
+  sv();showForm=false;R();
 }
-
+function stEdit(id){eid=id;eb=Object.assign({},recs.find(function(r){return r.id===id}));R()}
+function cEdit(){eid=null;eb=null;R()}
+function svEdit(){
+  var row=document.querySelector('tr[data-id="'+eid+'"]');
+  if(row){
+    var inputs=row.querySelectorAll('[data-field]');
+    inputs.forEach(function(inp){eb[inp.dataset.field]=inp.value});
+  }
+  var c=c90(eb.sp,eb.g,eb.k,eb.pp);
+  var orig=recs.find(function(r){return r.id===eid});
+  recs=recs.map(function(r){return r.id===eid?Object.assign({},eb,{np:c.np,cm:c.cm,ts:orig?orig.ts:''}):r});
+  sv();eid=null;eb=null;R();
+}
+// Auto-save a single field on a record without full re-render
 function inlineSave(id,field,val){
-  var rec=recs.find(r => r.id===id);
+  var rec=recs.find(function(r){return r.id===id});
   if(!rec)return;
-  let update = {}; update[field] = val;
-  let tempRec = Object.assign({}, rec, update);
-  var c = c90(tempRec.sp, tempRec.g, tempRec.k, tempRec.pp);
-  update.np = c.np; update.cm = c.cm;
-  db.collection("records").doc(id).update(update);
+  rec[field]=val;
+  // Recalc 90% and commission
+  var c=c90(rec.sp,rec.g,rec.k,rec.pp);
+  rec.np=c.np;rec.cm=c.cm;
+  sv();
+  // Update the 90% and commission cells in this row without re-render
+  var row=document.querySelector('tr[data-id="'+id+'"]');
+  if(row){
+    var el90=row.querySelector('[data-cell="np"]');
+    var elCm=row.querySelector('[data-cell="cm"]');
+    if(el90)el90.innerHTML=c.np?$(c.np):'—';
+    if(elCm){var cv=parseFloat(c.cm);elCm.className='mn '+((!isNaN(cv)&&cv!==0)?(cv>=0?'cp':'cmm'):'cz');elCm.innerHTML=c.cm?$(c.cm):'—'}
+  }
 }
-
-function tArc(id){var r=recs.find(x => x.id===id); if(r&&!r.ar&&!r.dr){modal={msg:'Cannot archive: no Received Date.'};showModal();return} db.collection("records").doc(id).update({ar:!r.ar});}
+function tArc(id){var r=recs.find(function(x){return x.id===id});if(r&&!r.ar&&!r.dr){modal={msg:'Cannot archive: no Received Date.'};showModal();return}recs=recs.map(function(x){return x.id===id?Object.assign({},x,{ar:!x.ar}):x});sv();if(eid===id){eid=null;eb=null}R()}
 function tSel(id){sel.has(id)?sel.delete(id):sel.add(id);R()}
-function tSelAll(){var so=gsort(gfilt()); var ids=so.map(r => r.id); var allSel=ids.length>0&&ids.every(id => sel.has(id)); ids.forEach(id => {allSel?sel.delete(id):sel.add(id)});R();}
-function bDel(){if(!sel.size)return;modal={msg:'Delete '+sel.size+' record(s)? Cannot undo.',onConfirm:function(){ sel.forEach(id => db.collection("records").doc(id).delete()); sel=new Set(); modal=null; R() }};showModal()}
-function bArc(){if(!sel.size)return;var ia=vm==='active'; if(ia){var m=recs.filter(r => sel.has(r.id)&&!r.ar&&!r.dr); if(m.length){modal={msg:m.length+' record(s) have no Received Date.'};showModal();return}} sel.forEach(id => db.collection("records").doc(id).update({ar:ia})); sel=new Set(); R();}
-
-function cInv(){
-  if(!sel.size)return; var s=recs.filter(r => sel.has(r.id)&&!r.ar); if(s.some(r => r.ii)){modal={msg:'Some records already invoiced.'};showModal();return}
-  var tc=s.reduce((a,r) => a+(parseFloat(r.cm)||0),0);
-  var snap=s.map(r => ({rid:r.id,on:r.on,k:r.k,g:r.g,sp:r.sp,pp:r.pp,np:r.np,cm:r.cm}));
-  db.collection("invoices").add({num:nin,dt:td(),ts:net(),rids:s.map(r=>r.id),items:snap,tc:tc.toFixed(2),st:'Pending',pd:'',ar:false}).then(ref => {
-    s.forEach(r => db.collection("records").doc(r.id).update({ii: ref.id}));
-    nin++; sv();
-  });
-  sel=new Set(); modal={msg:'Invoice #'+nin+' created'}; showModal();
+function tSelAll(){
+  var so=gsort(gfilt());
+  var ids=so.map(function(r){return r.id});
+  var allSel=ids.length>0&&ids.every(function(id){return sel.has(id)});
+  ids.forEach(function(id){allSel?sel.delete(id):sel.add(id)});R();
 }
-
-function mPaid(id){ db.collection("invoices").doc(id).update({st:'Paid',pd:td()}); }
-function mUnpaid(id){ db.collection("invoices").doc(id).update({st:'Pending',pd:''}); }
-function delInv(id){
-  modal={msg:'Delete this invoice? Records will be unlinked.',onConfirm:function(){
-    recs.filter(r => r.ii===id).forEach(r => db.collection("records").doc(r.id).update({ii:null}));
-    db.collection("invoices").doc(id).delete(); modal=null; R();
-  }}; showModal();
-}
-function arcInv(id){ let iv=invs.find(i=>i.id===id); db.collection("invoices").doc(id).update({ar:!iv.ar}); }
-
-function cRef(){
-  if(!modal||modal.type!=='refund')return; var s=modal.rcs;
-  var items=s.map(r => {var inp=document.getElementById('ref-'+r.id); return {rid:r.id,on:r.on,amt:parseFloat(inp?inp.value:modal.amts[r.id])||0}});
-  var tot=items.reduce((a,i) => a+i.amt,0);
-  db.collection("refunds").add({dt:td(),ts:net(),items:items,tot:tot.toFixed(2),st:'Pending',rd:''}).then(ref => {
-    items.forEach(it => db.collection("records").doc(it.rid).update({ri:ref.id}));
-  });
-  sel=new Set(); modal={msg:'Refund created'}; showModal();
-}
-
-function mRes(id){
-  db.collection("refunds").doc(id).update({st:'Resolved',rd:td()});
-  let rf=refs.find(r=>r.id===id); rf.items.forEach(it => db.collection("records").doc(it.rid).update({st:'Refunded'}));
-}
-
-function delRef(id){
-  modal={msg:'Delete this refund?',onConfirm:function(){
-    let rf=refs.find(r=>r.id===id); rf.items.forEach(it => db.collection("records").doc(it.rid).update({ri:null,st:'Ok'}));
-    db.collection("refunds").doc(id).delete(); modal=null; R();
-  }}; showModal();
-}
-
-function expCSV(){ /* ... (CSV Export function remains identical to your original) ... */ 
-  var d=recs.slice();if(es==='active')d=d.filter(function(r){return!r.ar});else if(es==='archived')d=d.filter(function(r){return r.ar});if(ef)d=d.filter(function(r){return r.dp>=ef});if(et)d=d.filter(function(r){return r.dp<=et});if(!d.length){modal={msg:'No records match.'};showModal();return}var h=["Order #","Date Purchased","Time Stamp","Date Received","Spot Price","Grams","Karat","Purchase Price","90% Price","Commission","Tracking #","Status","Notes","Invoice #","Archived"];var rows=d.map(function(r){var iv=invs.find(function(i){return i.id===r.ii});return[r.on,r.dp,r.ts||'',r.dr,r.sp,r.g,r.k,r.pp,r.np,r.cm,r.tn,r.st,r.nt,iv?iv.num:'',r.ar?'Yes':'No']});var csv=[h].concat(rows).map(function(rw){return rw.map(function(c){return'"'+(c||'').toString().replace(/"/g,'""')+'"'}).join(',')}).join('\n');var blob=new Blob([csv],{type:'text/csv'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='gold_export.csv';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);showExport=false;R()
-}
-
+function bDel(){if(!sel.size)return;modal={msg:'Delete '+sel.size+' record(s)? Cannot undo.',onConfirm:function(){recs=recs.filter(function(r){return!sel.has(r.id)});sv();sel=new Set();eid=null;eb=null;modal=null;R()}};showModal()}
+function bArc(){if(!sel.size)return;var s=recs.filter(function(r){return sel.has(r.id)}),ia=vm==='active';if(ia){var m=s.filter(function(r){return!r.ar&&!r.dr});if(m.length){modal={msg:m.length+' record(s) have no Received Date.'};showModal();return}}recs=recs.map(function(r){return sel.has(r.id)?Object.assign({},r,{ar:ia}):r});sv();sel=new Set();eid=null;eb=null;R()}
+function cInv(){if(!sel.size)return;var s=recs.filter(function(r){return sel.has(r.id)&&!r.ar});if(s.some(function(r){return r.ii})){modal={msg:'Some records already invoiced.'};showModal();return}if(!s.length){modal={msg:'No eligible active records.'};showModal();return}var tc=s.reduce(function(a,r){return a+(parseFloat(r.cm)||0)},0);
+// Snapshot record data at invoice time so it never changes
+var snap=s.map(function(r){return{rid:r.id,on:r.on,k:r.k,g:r.g,sp:r.sp,pp:r.pp,np:r.np,cm:r.cm}});
+var iv={id:gid(),num:nin,dt:td(),ts:net(),rids:s.map(function(r){return r.id}),items:snap,tc:tc.toFixed(2),st:'Pending',pd:'',ar:false};nin++;invs.push(iv);recs=recs.map(function(r){return sel.has(r.id)&&!r.ar?Object.assign({},r,{ii:iv.id}):r});sv();sel=new Set();modal={msg:'Invoice #'+iv.num+' created — Total: '+$(tc)};showModal()}
+function mPaid(id){invs=invs.map(function(i){return i.id===id?Object.assign({},i,{st:'Paid',pd:td()}):i});sv();R()}
+function mUnpaid(id){invs=invs.map(function(i){return i.id===id?Object.assign({},i,{st:'Pending',pd:''}):i});sv();R()}
+function delInv(id){modal={msg:'Delete this invoice? Records will be unlinked.',onConfirm:function(){recs=recs.map(function(r){return r.ii===id?Object.assign({},r,{ii:null}):r});invs=invs.filter(function(i){return i.id!==id});sv();modal=null;R()}};showModal()}
+function arcInv(id){invs=invs.map(function(i){return i.id===id?Object.assign({},i,{ar:!i.ar}):i});sv();R()}
+function oRefM(){if(!sel.size)return;var s=recs.filter(function(r){return sel.has(r.id)});if(s.some(function(r){return r.ri})){modal={msg:'Some records already refunded.'};showModal();return}modal={type:'refund',rcs:s,amts:{}};s.forEach(function(r){modal.amts[r.id]=Math.abs(parseFloat(r.cm)||0).toFixed(2)});showModal()}
+function cRef(){if(!modal||modal.type!=='refund')return;var s=modal.rcs,items=s.map(function(r){var inp=document.getElementById('ref-'+r.id);return{rid:r.id,on:r.on,amt:parseFloat(inp?inp.value:modal.amts[r.id])||0}});var tot=items.reduce(function(a,i){return a+i.amt},0);var rf={id:gid(),dt:td(),ts:net(),items:items,tot:tot.toFixed(2),st:'Pending',rd:''};refs.push(rf);recs=recs.map(function(r){var it=items.find(function(i){return i.rid===r.id});return it?Object.assign({},r,{ri:rf.id}):r});sv();sel=new Set();modal={msg:'Refund created — Total: '+$(tot)};showModal()}
+function mRes(id){refs=refs.map(function(r){return r.id===id?Object.assign({},r,{st:'Resolved',rd:td()}):r});var rf=refs.find(function(r){return r.id===id});if(rf){rf.items.forEach(function(it){recs=recs.map(function(r){return r.id===it.rid?Object.assign({},r,{st:'Refunded'}):r})})}sv();R()}
+function mUnres(id){var rf=refs.find(function(r){return r.id===id});if(rf){rf.items.forEach(function(it){recs=recs.map(function(r){return r.id===it.rid&&r.st==='Refunded'?Object.assign({},r,{st:'Ok'}):r})})}refs=refs.map(function(r){return r.id===id?Object.assign({},r,{st:'Pending',rd:''}):r});sv();R()}
+function delRef(id){modal={msg:'Delete this refund? Records will be unlinked and status restored.',onConfirm:function(){var rf=refs.find(function(r){return r.id===id});if(rf){rf.items.forEach(function(it){recs=recs.map(function(r){return r.id===it.rid?Object.assign({},r,{ri:null,st:'Ok'}):r})})}refs=refs.filter(function(r){return r.id!==id});sv();modal=null;R()}};showModal()}
+function arcRef(id){refs=refs.map(function(r){return r.id===id?Object.assign({},r,{ar:!r.ar}):r});sv();R()}
+function expCSV(){var d=recs.slice();if(es==='active')d=d.filter(function(r){return!r.ar});else if(es==='archived')d=d.filter(function(r){return r.ar});if(ef)d=d.filter(function(r){return r.dp>=ef});if(et)d=d.filter(function(r){return r.dp<=et});if(!d.length){modal={msg:'No records match.'};showModal();return}var h=["Order #","Date Purchased","Time Stamp","Date Received","Spot Price","Grams","Karat","Purchase Price","90% Price","Commission","Tracking #","Status","Notes","Invoice #","Archived"];var rows=d.map(function(r){var iv=invs.find(function(i){return i.id===r.ii});return[r.on,r.dp,r.ts||'',r.dr,r.sp,r.g,r.k,r.pp,r.np,r.cm,r.tn,r.st,r.nt,iv?iv.num:'',r.ar?'Yes':'No']});var csv=[h].concat(rows).map(function(rw){return rw.map(function(c){return'"'+(c||'').toString().replace(/"/g,'""')+'"'}).join(',')}).join('\n');var blob=new Blob([csv],{type:'text/csv'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='gold_export.csv';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);showExport=false;R()}
 function stab(m){vm=m;eid=null;eb=null;sel=new Set();showForm=false;showExport=false;sq='';R()}
+
 function showModal(){R()}
 function closeModal(){modal=null;R()}
 function vInvD(id){var iv=invs.find(function(i){return i.id===id});if(iv)modal={type:'inv-detail',inv:iv};showModal()}
 function vRefD(id){var rf=refs.find(function(r){return r.id===id});if(rf)modal={type:'ref-detail',ref:rf};showModal()}
-function openNotes(id){var rec=recs.find(function(r){return r.id===id});if(rec)modal={type:'notes',rid:id,on:rec.on,val:rec.nt||''};showModal()}
+
+// ═══ UPDATED openNotes: Auto-focus and scroll to end ═══
+function openNotes(id){
+  var rec=recs.find(function(r){return r.id===id});
+  if(rec){
+    modal={type:'notes',rid:id,on:rec.on,val:rec.nt||''};
+    showModal();
+    setTimeout(function(){
+      var ta=document.getElementById('notes-ta');
+      if(ta){
+        ta.focus();
+        var len=ta.value.length;
+        ta.setSelectionRange(len,len);
+      }
+    },50);
+  }
+}
+
 function saveNotes(){if(!modal||modal.type!=='notes')return;var ta=document.getElementById('notes-ta');if(ta)inlineSave(modal.rid,'nt',ta.value);modal=null;R()}
 
 // ═══ MAIN RENDER ═══
@@ -238,38 +229,220 @@ var ac=recs.filter(function(r){return!r.ar}).length,xc=recs.filter(function(r){r
 var h='';
 
 // Header
-h+='<div class="hdr"><div class="hdr-in"><div class="logo"><div class="logo-i">⬥</div><div><div class="logo-t">Gold Ledger</div><div class="logo-s">Cloud Storage Active</div></div></div><div class="stats">';
+h+='<div class="hdr"><div class="hdr-in"><div class="logo"><div class="logo-i">⬥</div><div><div class="logo-t">Gold Ledger</div><div class="logo-s">Purchase Tracker</div></div></div><div class="stats">';
 h+='<div class="st-b"><div class="st-l">Records</div><div class="st-v" style="color:#e8dcc8">'+ac+'</div></div><div class="st-d"></div>';
 h+='<div class="st-b"><div class="st-l">Invoices</div><div class="st-v" style="color:#93c5fd">'+invs.filter(function(i){return!i.ar}).length+'</div></div><div class="st-d"></div>';
 h+='<div class="st-b"><div class="st-l">Open Refunds</div><div class="st-v" style="color:#fca5a5">'+refs.filter(function(r){return r.st==='Pending'&&!r.ar}).length+'</div></div>';
 h+='</div></div></div>';
 
-// ... (Toolbar, Export panel, Form, Invoices, Refunds, and Records Table sections are identical to your original R() logic) ...
-/* (Note: I've truncated the repetitive UI code here for clarity; paste the remainder of your R function from your file here) */
-/* ------------------------------------------------------------------------------------------------------------------------- */
-h+='<div class="ctn"><div class="tb"><div class="tg"><button class="tbtn '+(vm==='active'?'ac':'in')+'" onclick="stab(\'active\')">Active ('+ac+')</button><button class="tbtn '+(vm==='archived'?'ac':'in')+'" onclick="stab(\'archived\')">Archived ('+xc+')</button><button class="tbtn '+(vm==='invoices'?'ia':'in')+'" onclick="stab(\'invoices\')">Invoices ('+invs.length+')</button><button class="tbtn '+(vm==='refunds'?'ra':'in')+'" onclick="stab(\'refunds\')">Refunds ('+refs.length+')</button></div>';
-if(vm==='active'||vm==='archived'){ h+='<div class="sw"><span class="si-i">'+I.sea+'</span><input class="si" id="search-box" placeholder="Search..." value="'+esc(sq)+'" oninput="sq=this.value;R()"><span class="sc '+(sq?'':'hidden')+'" onclick="sq=\'\';R()">'+I.can+'</span></div><div class="abs"><button class="bex '+(showExport?'op':'')+'" onclick="showExport=!showExport;showForm=false;R()">'+I.exp+' '+(showExport?'Close':'Export')+'</button>'; if(vm==='active')h+='<button class="bpr '+(showForm?'cx':'')+'" onclick="showForm=!showForm;showExport=false;if(showForm){nr={on:\'\',dp:td(),dr:\'\',sp:\'\',g:\'\',k:\'10K\',pp:\'\',tn:\'\',st:\'\',nt:\'\'}}R()">'+I.plus+' '+(showForm?'Cancel':'New Purchase')+'</button>'; h+='</div>'; }
-h+='</div></div>';
-if(showExport&&(vm==='active'||vm==='archived')){ h+='<div class="ctn" style="padding-top:0"><div class="pnl"><div class="pt">Export to CSV</div><div style="display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap"><div class="fw" style="min-width:150px"><label class="fl">From</label><input type="date" class="fi" value="'+ef+'" onchange="ef=this.value"></div><div class="fw" style="min-width:150px"><label class="fl">To</label><input type="date" class="fi" value="'+et+'" onchange="et=this.value"></div><div class="fw" style="min-width:130px"><label class="fl">Scope</label><select class="fsel" onchange="es=this.value"><option'+(es==='active'?' selected':'')+'>active</option><option'+(es==='archived'?' selected':'')+'>archived</option><option'+(es==='all'?' selected':'')+'>all</option></select></div><button class="badd" onclick="expCSV()">Download</button></div></div></div>'; }
-if(showForm&&vm==='active'){ h+='<div class="ctn" style="padding-top:0"><div class="pnl"><div class="pt">New Purchase Entry</div><div class="fg"><div class="fw"><label class="fl">Order #</label><input class="fi" id="nr-on" value="'+esc(nr.on)+'"></div><div class="fw"><label class="fl">Date Purchased</label><input type="date" class="fi" id="nr-dp" value="'+(nr.dp||td())+'"></div><div class="fw"><label class="fl">Date Received</label><input type="date" class="fi" id="nr-dr" value="'+esc(nr.dr)+'"></div><div class="fw"><label class="fl">Spot Price</label><span class="fp">$</span><input type="number" step="any" class="fi px" id="nr-sp" value="'+esc(nr.sp)+'" oninput="updateCalcFields()"></div><div class="fw"><label class="fl">Grams</label><input type="number" step="any" class="fi sx" id="nr-g" value="'+esc(nr.g)+'" oninput="updateCalcFields()"><span class="fs">g</span></div><div class="fw"><label class="fl">Karat</label><select class="fsel" id="nr-k" onchange="updateCalcFields()">'+KO.map(function(k){return'<option'+(nr.k===k?' selected':'')+'>'+k+'</option>'}).join('')+'</select></div><div class="fw"><label class="fl">Purchase Price</label><span class="fp">$</span><input type="number" step="any" class="fi px" id="nr-pp" value="'+esc(nr.pp)+'" oninput="updateCalcFields()"></div><div class="fw"><label class="fl">90% Price</label><input class="fi" id="nr-90" disabled value="—"></div><div class="fw"><label class="fl">Commission</label><input class="fi" id="nr-cm" disabled value="—"></div><div class="fw"><label class="fl">Tracking #</label><input class="fi" id="nr-tn" value="'+esc(nr.tn)+'"></div><div class="fw"><label class="fl">Status</label><select class="fsel" id="nr-st">'+SO.map(function(s){return'<option value="'+esc(s)+'"'+(nr.st===s?' selected':'')+'>'+(s||'—')+'</option>'}).join('')+'</select></div><div class="fw sp2"><label class="fl">Notes</label><input class="fi" id="nr-nt" value="'+esc(nr.nt)+'"></div></div><div style="display:flex;justify-content:flex-end;margin-top:18px"><button class="badd" onclick="addRec()">Add Record</button></div></div></div>'; }
-if(vm==='invoices'){ var invActive=invs.filter(function(i){return!i.ar}); var invArchived=invs.filter(function(i){return i.ar}); var showInvArc=window._invArc||false; var dispInvs=showInvArc?invArchived:invActive; h+='<div class="ctn" style="padding-top:8px"><div style="display:flex;gap:8px;margin-bottom:12px"><button class="tbtn '+(showInvArc?'in':'ac')+'" onclick="window._invArc=false;R()" style="font-size:10px;padding:5px 12px">Active ('+invActive.length+')</button><button class="tbtn '+(showInvArc?'ac':'in')+'" onclick="window._invArc=true;R()" style="font-size:10px;padding:5px 12px">Archived ('+invArchived.length+')</button></div></div><div class="ctt" style="margin-top:0">'; if(!dispInvs.length){h+='<div class="es"><div class="es-i">'+I.inv+'</div><div class="es-t">'+(showInvArc?'No archived invoices':'No invoices yet')+'</div><div class="es-s">'+(showInvArc?'Archive invoices from the active view':'Select records on Active tab and click Invoice')+'</div></div>'} else{ h+='<div class="tw"><div class="tsx"><table style="min-width:1000px"><thead><tr><th class="ns">Invoice #</th><th class="ns">Date</th><th class="ns">Records</th><th class="ns">Total</th><th class="ns">Status</th><th class="ns">Paid Date</th><th class="ns" style="text-align:right">Actions</th></tr></thead><tbody>'; dispInvs.slice().reverse().forEach(function(iv){ h+='<tr><td><span class="co">#'+iv.num+'</span></td><td><span class="cd">'+iv.dt+'</span></td><td><span class="mn" style="color:#e8dcc8">'+iv.rids.length+'</span></td><td><span class="mn cp">'+$(iv.tc)+'</span></td><td><span class="sbg '+(iv.st==='Paid'?'ispd':'isp')+'">'+iv.st+'</span></td><td><span class="cd">'+(iv.pd||'—')+'</span></td><td style="text-align:right"><div style="display:flex;gap:6px;justify-content:flex-end">'; if(iv.st==='Pending')h+='<button class="rb rs" onclick="mPaid(\''+iv.id+'\')">'+I.chk+' Paid</button>'; else h+='<button class="rb rx" onclick="mUnpaid(\''+iv.id+'\')">Unpaid</button>'; h+='<button class="rb re" onclick="vInvD(\''+iv.id+'\')">'+I.edt+'</button><button class="rb '+(iv.ar?'rr':'ra')+'" onclick="arcInv(\''+iv.id+'\')">'+(iv.ar?I.res:I.arc)+'</button><button class="rb" style="color:#f87171;border-color:#991b1b" onclick="delInv(\''+iv.id+'\')">'+I.tra+'</button></div></td></tr>'; }); h+='</tbody></table></div></div>'; } h+='</div>'; }
-if(vm==='refunds'){ var refActive=refs.filter(function(r){return!r.ar}); var refArchived=refs.filter(function(r){return r.ar}); var showRefArc=window._refArc||false; var dispRefs=showRefArc?refArchived:refActive; h+='<div class="ctn" style="padding-top:8px"><div style="display:flex;gap:8px;margin-bottom:12px"><button class="tbtn '+(showRefArc?'in':'ac')+'" onclick="window._refArc=false;R()" style="font-size:10px;padding:5px 12px">Active ('+refActive.length+')</button><button class="tbtn '+(showRefArc?'ac':'in')+'" onclick="window._refArc=true;R()" style="font-size:10px;padding:5px 12px">Archived ('+refArchived.length+')</button></div></div><div class="ctt" style="margin-top:0">'; if(!dispRefs.length){h+='<div class="es"><div class="es-i">'+I.ref+'</div><div class="es-t">'+(showRefArc?'No archived refunds':'No refunds yet')+'</div><div class="es-s">'+(showRefArc?'Archive refunds from the active view':'Select records and click Refund')+'</div></div>'} else{ h+='<div class="tw"><div class="tsx"><table style="min-width:900px"><thead><tr><th class="ns">Date</th><th class="ns">Records</th><th class="ns">Total</th><th class="ns">Status</th><th class="ns">Resolved</th><th class="ns" style="text-align:right">Actions</th></tr></thead><tbody>'; dispRefs.slice().reverse().forEach(function(rf){ h+='<tr><td><span class="cd">'+rf.dt+'</span></td><td><span class="mn" style="color:#e8dcc8">'+rf.items.length+'</span></td><td><span class="mn cmm">'+$(rf.tot)+'</span></td><td><span class="sbg '+(rf.st==='Resolved'?'isrr':'isrp')+'">'+rf.st+'</span></td><td><span class="cd">'+(rf.rd||'—')+'</span></td><td style="text-align:right"><div style="display:flex;gap:6px;justify-content:flex-end">'; if(rf.st==='Pending')h+='<button class="rb rs" onclick="mRes(\''+rf.id+'\')">'+I.chk+' Resolve</button>'; else h+='<button class="rb rx" onclick="mUnres(\''+rf.id+'\')">Unresolve</button>'; h+='<button class="rb re" onclick="vRefD(\''+rf.id+'\')">'+I.edt+'</button><button class="rb '+(rf.ar?'rr':'ra')+'" onclick="arcRef(\''+rf.id+'\')">'+(rf.ar?I.res:I.arc)+'</button><button class="rb" style="color:#f87171;border-color:#991b1b" onclick="delRef(\''+rf.id+'\')">'+I.tra+'</button></div></td></tr>'; }); h+='</tbody></table></div></div>'; } h+='</div>'; }
-if(vm==='active'||vm==='archived'){ h+='<div class="ctt">'; if(!so.length){h+='<div class="es"><div class="es-i">⬥</div><div class="es-t">'+(sq?'No matches':vm==='archived'?'No archived records':'No purchases yet')+'</div><div class="es-s">'+(sq?'Try different terms':vm==='active'?'Click New Purchase':'Archive from Active tab')+'</div></div>'} else{ if(sel.size>0){ h+='<div class="bb"><span class="bc">'+sel.size+' selected</span><div class="bd"></div>'; if(vm==='active'){h+='<button class="bbtn biv" onclick="cInv()">'+I.inv+' Invoice</button><button class="bbtn brf" onclick="oRefM()">'+I.ref+' Refund</button>'} h+='<button class="bbtn ba" onclick="bArc()">'+(vm==='active'?I.arc+' Archive':I.res+' Restore')+'</button><button class="bbtn bdl" onclick="bDel()">'+I.tra+' Delete</button><button class="bbtn bcl" onclick="sel=new Set();R()">Clear</button></div>'; } var allSel=so.length>0&&so.every(function(r){return sel.has(r.id)}); var cols=[['on','Order #'],['dp','Purchased'],['dr','Received'],['sp','Spot'],['g','Grams'],['k','Karat'],['pp','Purchase'],['np','90%'],['cm','Commission'],['tn','Tracking #'],['st','Status'],['nt','Notes']]; h+='<div class="tw"><div class="tsx"><table><thead><tr><th class="cb"><input type="checkbox" '+(allSel?'checked':'')+' onchange="tSelAll()"></th>'; cols.forEach(function(c){h+='<th class="'+(sof===c[0]?'at':'')+'" onclick="if(sof===\''+c[0]+'\')sod=sod===\'asc\'?\'desc\':\'asc\';else{sof=\''+c[0]+'\';sod=\'desc\'}R()">'+c[1]+(sof===c[0]?(sod==='asc'?' ↑':' ↓'):'')+'</th>'}); h+='<th style="text-align:right;cursor:default">Actions</th></tr></thead><tbody>'; so.forEach(function(rec){ var d=rec; var cv=parseFloat(d.cm),cc=!isNaN(cv)&&cv!==0?(cv>=0?'cp':'cmm'):'cz'; var ivl=rec.ii?invs.find(function(i){return i.id===rec.ii}):null; var rid=rec.id; h+='<tr data-id="'+rid+'"><td class="cb"><input type="checkbox" '+(sel.has(rid)?'checked':'')+' onchange="tSel(\''+rid+'\')"></td><td><input class="ii" style="width:80px" value="'+esc(d.on)+'" onchange="inlineSave(\''+rid+'\',\'on\',this.value)">'+(ivl?' <span style="font-size:9px;color:#93c5fd">#'+ivl.num+'</span>':'')+(rec.ri?' <span style="font-size:10px;color:#fca5a5">⟲</span>':'')+'</td><td><input type="date" class="ii" value="'+d.dp+'" onchange="inlineSave(\''+rid+'\',\'dp\',this.value)"></td><td><input type="date" class="ii" value="'+esc(d.dr)+'" onchange="inlineSave(\''+rid+'\',\'dr\',this.value)"></td><td><input type="number" step="any" class="ii" style="width:85px" value="'+esc(d.sp)+'" onchange="inlineSave(\''+rid+'\',\'sp\',this.value)"></td><td><input type="number" step="any" class="ii" style="width:70px" value="'+esc(d.g)+'" onchange="inlineSave(\''+rid+'\',\'g\',this.value)"></td><td><select class="isel" onchange="inlineSave(\''+rid+'\',\'k\',this.value)">'+KO.map(function(k){return'<option'+(d.k===k?' selected':'')+'>'+k+'</option>'}).join('')+'</select></td><td><input type="number" step="any" class="ii" style="width:85px" value="'+esc(d.pp)+'" onchange="inlineSave(\''+rid+'\',\'pp\',this.value)"></td><td><span class="mn c9" data-cell="np">'+(d.np?$(d.np):'—')+'</span></td><td><span class="mn '+cc+'" data-cell="cm">'+(d.cm?$(d.cm):'—')+'</span></td><td><input class="ii" style="width:100px" value="'+esc(d.tn)+'" onchange="inlineSave(\''+rid+'\',\'tn\',this.value)"></td><td><select class="isel" onchange="inlineSave(\''+rid+'\',\'st\',this.value)">'+SO.map(function(s){return'<option value="'+esc(s)+'"'+(d.st===s?' selected':'')+'>'+(s||'—')+'</option>'}).join('')+'</select></td><td style="position:relative"><div style="display:flex;align-items:center;gap:4px"><input class="ii" style="width:110px" value="'+esc(d.nt)+'" onchange="inlineSave(\''+rid+'\',\'nt\',this.value)">'+(d.nt?'<span style="cursor:pointer;color:#6b6554;font-size:14px;line-height:1" onclick="openNotes(\''+rid+'\')" title="Expand notes">⤢</span>':'')+'</div></td><td style="text-align:right"><button class="rb '+(rec.ar?'rr':'ra')+'" onclick="tArc(\''+rid+'\')">'+(rec.ar?I.res:I.arc)+'</button></td></tr>'; }); h+='</tbody></table></div></div>'; } h+='</div>'; }
-if(modal){ if(modal.type==='refund'){ var sr=modal.rcs; h+='<div class="mo"><div class="mx" onclick="event.stopPropagation()"><div style="font-size:16px;font-weight:700;color:#f87171;margin-bottom:16px">Create Refund / Chargeback</div><p style="font-size:12px;color:#6b6554;margin-bottom:12px">Enter refund amount per record:</p><div style="max-height:300px;overflow-y:auto;margin-bottom:16px">'; sr.forEach(function(r){ h+='<div class="rr"><span style="flex:1;color:#e8dcc8;font-family:JetBrains Mono,monospace;font-size:12px">'+esc(r.on)+'</span><span style="color:#6b6554;font-size:11px">Comm: '+$(r.cm)+'</span><div style="position:relative;display:flex;align-items:center"><span style="position:absolute;left:8px;color:#a08c5a;font-size:12px;pointer-events:none">$</span><input type="number" step="any" class="ii" id="ref-'+r.id+'" style="width:100px;padding-left:20px" value="'+(modal.amts[r.id]||'')+'"></div></div>'; }); h+='</div><div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid #2a2820;margin-top:12px"><span style="font-size:14px;font-weight:700;color:#f87171;font-family:JetBrains Mono,monospace">Refund Total</span><div class="mact"><button class="mcn" onclick="closeModal()">Cancel</button><button class="mrf" onclick="cRef()">Create Refund</button></div></div></div></div>'; } else if(modal.type==='inv-detail'){ var iv=modal.inv; var irs=iv.items?iv.items:iv.rids.map(function(id){return recs.find(function(r){return r.id===id})}).filter(Boolean); h+='<div class="mo" onclick="closeModal()"><div class="mx" onclick="event.stopPropagation()"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><span style="font-size:18px;font-weight:700;color:#93c5fd;font-family:Playfair Display,serif">Invoice #'+iv.num+'</span><span class="sbg '+(iv.st==='Paid'?'ispd':'isp')+'">'+iv.st+'</span></div><div style="font-size:12px;color:#6b6554;margin-bottom:12px">Created: '+iv.dt+' at '+iv.ts+(iv.pd?' · Paid: '+iv.pd:'')+'</div><div style="max-height:300px;overflow-y:auto">'; irs.forEach(function(r){h+='<div class="dr"><span style="color:#6b6554">'+esc(r.on)+' — '+r.k+' '+r.g+'g</span><span class="mn" style="color:#e8dcc8">'+$(r.cm)+'</span></div>'}); h+='</div><div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid #2a2820;margin-top:12px"><span class="mn cp" style="font-size:16px">Total: '+$(iv.tc)+'</span><button class="mok" onclick="closeModal()">Close</button></div></div></div>'; } else if(modal.type==='ref-detail'){ var rf=modal.ref; h+='<div class="mo" onclick="closeModal()"><div class="mx" onclick="event.stopPropagation()"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><span style="font-size:18px;font-weight:700;color:#fca5a5;font-family:Playfair Display,serif">Refund Details</span><span class="sbg '+(rf.st==='Resolved'?'isrr':'isrp')+'">'+rf.st+'</span></div><div style="font-size:12px;color:#6b6554;margin-bottom:12px">Created: '+rf.dt+' at '+rf.ts+(rf.rd?' · Resolved: '+rf.rd:'')+'</div><div style="max-height:300px;overflow-y:auto">'; rf.items.forEach(function(it){h+='<div class="dr"><span style="color:#6b6554">'+esc(it.on)+'</span><span class="mn" style="color:#f87171">'+$(it.amt)+'</span></div>'}); h+='</div><div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid #2a2820;margin-top:12px"><span class="mn cmm" style="font-size:16px">Total: '+$(rf.tot)+'</span><button class="mok" onclick="closeModal()">Close</button></div></div></div>'; } else if(modal.type==='notes'){ h+='<div class="mo" onclick="saveNotes()"><div class="mx" onclick="event.stopPropagation()" style="max-width:480px"><div style="font-size:14px;font-weight:700;color:#c9a84c;margin-bottom:12px">Notes — '+esc(modal.on)+'</div><textarea id="notes-ta" style="width:100%;min-height:180px;padding:12px;background:#1c1b17;border:1px solid #3d3826;border-radius:8px;color:#e8dcc8;font-size:13px;font-family:\'DM Sans\',sans-serif;outline:none;resize:vertical;line-height:1.6">'+esc(modal.val)+'</textarea><div class="mact" style="margin-top:12px"><button class="mcn" onclick="modal=null;R()">Cancel</button><button class="mok" onclick="saveNotes()">Save</button></div></div></div>'; } else{ h+='<div class="mo" onclick="closeModal()"><div class="mx" onclick="event.stopPropagation()"><p class=\"mmsg\">'+modal.msg+'</p><div class=\"mact\">'; if(modal.onConfirm)h+='<button class=\"mcn\" onclick=\"closeModal()\">Cancel</button><button class=\"mdl\" onclick=\"modal.onConfirm()\">Delete</button>'; else h+='<button class=\"mok\" onclick=\"closeModal()\">OK</button>'; h+='</div></div></div>'; } }
+// Toolbar
+h+='<div class="ctn"><div class="tb"><div class="tg">';
+h+='<button class="tbtn '+(vm==='active'?'ac':'in')+'" onclick="stab(\'active\')">Active ('+ac+')</button>';
+h+='<button class="tbtn '+(vm==='archived'?'ac':'in')+'" onclick="stab(\'archived\')">Archived ('+xc+')</button>';
+h+='<button class="tbtn '+(vm==='invoices'?'ia':'in')+'" onclick="stab(\'invoices\')">Invoices ('+invs.length+')</button>';
+h+='<button class="tbtn '+(vm==='refunds'?'ra':'in')+'" onclick="stab(\'refunds\')">Refunds ('+refs.length+')</button>';
+h+='</div>';
 
-/* ------------------------------------------------------------------------------------------------------------------------- */
+if(vm==='active'||vm==='archived'){
+  h+='<div class="sw"><span class="si-i">'+I.sea+'</span><input class="si" id="search-box" placeholder="Search..." value="'+esc(sq)+'" oninput="sq=this.value;R()"><span class="sc '+(sq?'':'hidden')+'" onclick="sq=\'\';R()">'+I.can+'</span></div>';
+  h+='<div class="abs"><button class="bex '+(showExport?'op':'')+'" onclick="showExport=!showExport;showForm=false;R()">'+I.exp+' '+(showExport?'Close':'Export')+'</button>';
+  if(vm==='active')h+='<button class="bpr '+(showForm?'cx':'')+'" onclick="showForm=!showForm;showExport=false;if(showForm){nr={on:\'\',dp:td(),dr:\'\',sp:\'\',g:\'\',k:\'10K\',pp:\'\',tn:\'\',st:\'\',nt:\'\'}}R()">'+I.plus+' '+(showForm?'Cancel':'New Purchase')+'</button>';
+  h+='</div>';
+}
+h+='</div></div>';
+
+// Export panel
+if(showExport&&(vm==='active'||vm==='archived')){
+  h+='<div class="ctn" style="padding-top:0"><div class="pnl"><div class="pt">Export to CSV</div><div style="display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap">';
+  h+='<div class="fw" style="min-width:150px"><label class="fl">From</label><input type="date" class="fi" value="'+ef+'" onchange="ef=this.value"></div>';
+  h+='<div class="fw" style="min-width:150px"><label class="fl">To</label><input type="date" class="fi" value="'+et+'" onchange="et=this.value"></div>';
+  h+='<div class="fw" style="min-width:130px"><label class="fl">Scope</label><select class="fsel" onchange="es=this.value"><option'+(es==='active'?' selected':'')+'>active</option><option'+(es==='archived'?' selected':'')+'>archived</option><option'+(es==='all'?' selected':'')+'>all</option></select></div>';
+  h+='<button class="badd" onclick="expCSV()">Download</button></div></div></div>';
+}
+
+// New purchase form
+if(showForm&&vm==='active'){
+  h+='<div class="ctn" style="padding-top:0"><div class="pnl"><div class="pt">New Purchase Entry</div><div class="fg">';
+  h+='<div class="fw"><label class="fl">Order #</label><input class="fi" id="nr-on" value="'+esc(nr.on)+'"></div>';
+  h+='<div class="fw"><label class="fl">Date Purchased</label><input type="date" class="fi" id="nr-dp" value="'+(nr.dp||td())+'"></div>';
+  h+='<div class="fw"><label class="fl">Date Received</label><input type="date" class="fi" id="nr-dr" value="'+esc(nr.dr)+'"></div>';
+  h+='<div class="fw"><label class="fl">Spot Price</label><span class="fp">$</span><input type="number" step="any" class="fi px" id="nr-sp" value="'+esc(nr.sp)+'" oninput="updateCalcFields()"></div>';
+  h+='<div class="fw"><label class="fl">Grams</label><input type="number" step="any" class="fi sx" id="nr-g" value="'+esc(nr.g)+'" oninput="updateCalcFields()"><span class="fs">g</span></div>';
+  h+='<div class="fw"><label class="fl">Karat</label><select class="fsel" id="nr-k" onchange="updateCalcFields()">'+KO.map(function(k){return'<option'+(nr.k===k?' selected':'')+'>'+k+'</option>'}).join('')+'</select></div>';
+  h+='<div class="fw"><label class="fl">Purchase Price</label><span class="fp">$</span><input type="number" step="any" class="fi px" id="nr-pp" value="'+esc(nr.pp)+'" oninput="updateCalcFields()"></div>';
+  h+='<div class="fw"><label class="fl">90% Price</label><input class="fi" id="nr-90" disabled value="—"></div>';
+  h+='<div class="fw"><label class="fl">Commission</label><input class="fi" id="nr-cm" disabled value="—"></div>';
+  h+='<div class="fw"><label class="fl">Tracking #</label><input class="fi" id="nr-tn" value="'+esc(nr.tn)+'"></div>';
+  h+='<div class="fw"><label class="fl">Status</label><select class="fsel" id="nr-st">'+SO.map(function(s){return'<option value="'+esc(s)+'"'+(nr.st===s?' selected':'')+'>'+(s||'—')+'</option>'}).join('')+'</select></div>';
+  h+='<div class="fw sp2"><label class="fl">Notes</label><input class="fi" id="nr-nt" value="'+esc(nr.nt)+'"></div>';
+  h+='</div><div style="display:flex;justify-content:flex-end;margin-top:18px"><button class="badd" onclick="addRec()">Add Record</button></div></div></div>';
+}
+
+// Invoices tab
+if(vm==='invoices'){
+  var invActive=invs.filter(function(i){return!i.ar});
+  var invArchived=invs.filter(function(i){return i.ar});
+  var showInvArc=window._invArc||false;
+  var dispInvs=showInvArc?invArchived:invActive;
+  h+='<div class="ctn" style="padding-top:8px"><div style="display:flex;gap:8px;margin-bottom:12px">';
+  h+='<button class="tbtn '+(showInvArc?'in':'ac')+'" onclick="window._invArc=false;R()" style="font-size:10px;padding:5px 12px">Active ('+invActive.length+')</button>';
+  h+='<button class="tbtn '+(showInvArc?'ac':'in')+'" onclick="window._invArc=true;R()" style="font-size:10px;padding:5px 12px">Archived ('+invArchived.length+')</button>';
+  h+='</div></div>';
+  h+='<div class="ctt" style="margin-top:0">';
+  if(!dispInvs.length){h+='<div class="es"><div class="es-i">'+I.inv+'</div><div class="es-t">'+(showInvArc?'No archived invoices':'No invoices yet')+'</div><div class="es-s">'+(showInvArc?'Archive invoices from the active view':'Select records on Active tab and click Invoice')+'</div></div>'}
+  else{
+    h+='<div class="tw"><div class="tsx"><table style="min-width:1000px"><thead><tr><th class="ns">Invoice #</th><th class="ns">Date</th><th class="ns">Records</th><th class="ns">Total</th><th class="ns">Status</th><th class="ns">Paid Date</th><th class="ns" style="text-align:right">Actions</th></tr></thead><tbody>';
+    dispInvs.slice().reverse().forEach(function(iv){
+      h+='<tr><td><span class="co">#'+iv.num+'</span></td><td><span class="cd">'+iv.dt+'</span></td><td><span class="mn" style="color:#e8dcc8">'+iv.rids.length+'</span></td><td><span class="mn cp">'+$(iv.tc)+'</span></td><td><span class="sbg '+(iv.st==='Paid'?'ispd':'isp')+'">'+iv.st+'</span></td><td><span class="cd">'+(iv.pd||'—')+'</span></td><td style="text-align:right"><div style="display:flex;gap:6px;justify-content:flex-end">';
+      if(iv.st==='Pending')h+='<button class="rb rs" onclick="mPaid(\''+iv.id+'\')">'+I.chk+' Paid</button>';
+      else h+='<button class="rb rx" onclick="mUnpaid(\''+iv.id+'\')">Unpaid</button>';
+      h+='<button class="rb re" onclick="vInvD(\''+iv.id+'\')">'+I.edt+'</button>';
+      h+='<button class="rb '+(iv.ar?'rr':'ra')+'" onclick="arcInv(\''+iv.id+'\')">'+(iv.ar?I.res:I.arc)+'</button>';
+      h+='<button class="rb" style="color:#f87171;border-color:#991b1b" onclick="delInv(\''+iv.id+'\')">'+I.tra+'</button>';
+      h+='</div></td></tr>';
+    });
+    h+='</tbody></table></div></div>';
+  }
+  h+='</div>';
+}
+
+// Refunds tab
+if(vm==='refunds'){
+  var refActive=refs.filter(function(r){return!r.ar});
+  var refArchived=refs.filter(function(r){return r.ar});
+  var showRefArc=window._refArc||false;
+  var dispRefs=showRefArc?refArchived:refActive;
+  h+='<div class="ctn" style="padding-top:8px"><div style="display:flex;gap:8px;margin-bottom:12px">';
+  h+='<button class="tbtn '+(showRefArc?'in':'ac')+'" onclick="window._refArc=false;R()" style="font-size:10px;padding:5px 12px">Active ('+refActive.length+')</button>';
+  h+='<button class="tbtn '+(showRefArc?'ac':'in')+'" onclick="window._refArc=true;R()" style="font-size:10px;padding:5px 12px">Archived ('+refArchived.length+')</button>';
+  h+='</div></div>';
+  h+='<div class="ctt" style="margin-top:0">';
+  if(!dispRefs.length){h+='<div class="es"><div class="es-i">'+I.ref+'</div><div class="es-t">'+(showRefArc?'No archived refunds':'No refunds yet')+'</div><div class="es-s">'+(showRefArc?'Archive refunds from the active view':'Select records and click Refund')+'</div></div>'}
+  else{
+    h+='<div class="tw"><div class="tsx"><table style="min-width:900px"><thead><tr><th class="ns">Date</th><th class="ns">Records</th><th class="ns">Total</th><th class="ns">Status</th><th class="ns">Resolved</th><th class="ns" style="text-align:right">Actions</th></tr></thead><tbody>';
+    dispRefs.slice().reverse().forEach(function(rf){
+      h+='<tr><td><span class="cd">'+rf.dt+'</span></td><td><span class="mn" style="color:#e8dcc8">'+rf.items.length+'</span></td><td><span class="mn cmm">'+$(rf.tot)+'</span></td><td><span class="sbg '+(rf.st==='Resolved'?'isrr':'isrp')+'">'+rf.st+'</span></td><td><span class="cd">'+(rf.rd||'—')+'</span></td><td style="text-align:right"><div style="display:flex;gap:6px;justify-content:flex-end">';
+      if(rf.st==='Pending')h+='<button class="rb rs" onclick="mRes(\''+rf.id+'\')">'+I.chk+' Resolve</button>';
+      else h+='<button class="rb rx" onclick="mUnres(\''+rf.id+'\')">Unresolve</button>';
+      h+='<button class="rb re" onclick="vRefD(\''+rf.id+'\')">'+I.edt+'</button>';
+      h+='<button class="rb '+(rf.ar?'rr':'ra')+'" onclick="arcRef(\''+rf.id+'\')">'+(rf.ar?I.res:I.arc)+'</button>';
+      h+='<button class="rb" style="color:#f87171;border-color:#991b1b" onclick="delRef(\''+rf.id+'\')">'+I.tra+'</button>';
+      h+='</div></td></tr>';
+    });
+    h+='</tbody></table></div></div>';
+  }
+  h+='</div>';
+}
+
+// Records table
+if(vm==='active'||vm==='archived'){
+  h+='<div class="ctt">';
+  if(!so.length){h+='<div class="es"><div class="es-i">⬥</div><div class="es-t">'+(sq?'No matches':vm==='archived'?'No archived records':'No purchases yet')+'</div><div class="es-s">'+(sq?'Try different terms':vm==='active'?'Click New Purchase':'Archive from Active tab')+'</div></div>'}
+  else{
+    if(sel.size>0){
+      h+='<div class="bb"><span class="bc">'+sel.size+' selected</span><div class="bd"></div>';
+      if(vm==='active'){h+='<button class="bbtn biv" onclick="cInv()">'+I.inv+' Invoice</button><button class="bbtn brf" onclick="oRefM()">'+I.ref+' Refund</button>'}
+      h+='<button class="bbtn ba" onclick="bArc()">'+(vm==='active'?I.arc+' Archive':I.res+' Restore')+'</button>';
+      h+='<button class="bbtn bdl" onclick="bDel()">'+I.tra+' Delete</button><button class="bbtn bcl" onclick="sel=new Set();R()">Clear</button></div>';
+    }
+    var allSel=so.length>0&&so.every(function(r){return sel.has(r.id)});
+    var cols=[['on','Order #'],['dp','Purchased'],['dr','Received'],['sp','Spot'],['g','Grams'],['k','Karat'],['pp','Purchase'],['np','90%'],['cm','Commission'],['tn','Tracking #'],['st','Status'],['nt','Notes']];
+    h+='<div class="tw"><div class="tsx"><table><thead><tr><th class="cb"><input type="checkbox" '+(allSel?'checked':'')+' onchange="tSelAll()"></th>';
+    cols.forEach(function(c){h+='<th class="'+(sof===c[0]?'at':'')+'" onclick="if(sof===\''+c[0]+'\')sod=sod===\'asc\'?\'desc\':\'asc\';else{sof=\''+c[0]+'\';sod=\'desc\'}R()">'+c[1]+(sof===c[0]?(sod==='asc'?' ↑':' ↓'):'')+'</th>'});
+    h+='<th style="text-align:right;cursor:default">Actions</th></tr></thead><tbody>';
+
+    so.forEach(function(rec){
+      var d=rec;
+      var cv=parseFloat(d.cm),cc=!isNaN(cv)&&cv!==0?(cv>=0?'cp':'cmm'):'cz';
+      var ivl=rec.ii?invs.find(function(i){return i.id===rec.ii}):null;
+      var rid=rec.id;
+      h+='<tr data-id="'+rid+'">';
+      h+='<td class="cb"><input type="checkbox" '+(sel.has(rid)?'checked':'')+' onchange="tSel(\''+rid+'\')"></td>';
+      h+='<td><input class="ii" style="width:80px" value="'+esc(d.on)+'" onchange="inlineSave(\''+rid+'\',\'on\',this.value)">'+(ivl?' <span style="font-size:9px;color:#93c5fd">#'+ivl.num+'</span>':'')+(rec.ri?' <span style="font-size:10px;color:#fca5a5">⟲</span>':'')+'</td>';
+      h+='<td><input type="date" class="ii" value="'+d.dp+'" onchange="inlineSave(\''+rid+'\',\'dp\',this.value)"></td>';
+      h+='<td><input type="date" class="ii" value="'+esc(d.dr)+'" onchange="inlineSave(\''+rid+'\',\'dr\',this.value)"></td>';
+      h+='<td><input type="number" step="any" class="ii" style="width:85px" value="'+esc(d.sp)+'" onchange="inlineSave(\''+rid+'\',\'sp\',this.value)"></td>';
+      h+='<td><input type="number" step="any" class="ii" style="width:70px" value="'+esc(d.g)+'" onchange="inlineSave(\''+rid+'\',\'g\',this.value)"></td>';
+      h+='<td><select class="isel" onchange="inlineSave(\''+rid+'\',\'k\',this.value)">'+KO.map(function(k){return'<option'+(d.k===k?' selected':'')+'>'+k+'</option>'}).join('')+'</select></td>';
+      h+='<td><input type="number" step="any" class="ii" style="width:85px" value="'+esc(d.pp)+'" onchange="inlineSave(\''+rid+'\',\'pp\',this.value)"></td>';
+      h+='<td><span class="mn c9" data-cell="np">'+(d.np?$(d.np):'—')+'</span></td>';
+      h+='<td><span class="mn '+cc+'" data-cell="cm">'+(d.cm?$(d.cm):'—')+'</span></td>';
+      h+='<td><input class="ii" style="width:100px" value="'+esc(d.tn)+'" onchange="inlineSave(\''+rid+'\',\'tn\',this.value)"></td>';
+      h+='<td><select class="isel" onchange="inlineSave(\''+rid+'\',\'st\',this.value)">'+SO.map(function(s){return'<option value="'+esc(s)+'"'+(d.st===s?' selected':'')+'>'+(s||'—')+'</option>'}).join('')+'</select></td>';
+      
+      // ═══ UPDATED Notes Cell: Click or Focus to open modal ═══
+      h+='<td style="position:relative"><div style="display:flex;align-items:center;gap:4px">';
+      h+='<input class="ii" style="width:110px" value="'+esc(d.nt)+'" onclick="openNotes(\''+rid+'\')" onfocus="openNotes(\''+rid+'\')" readonly placeholder="Click to edit...">';
+      h+='<span style="cursor:pointer;color:#6b6554;font-size:14px;line-height:1" onclick="openNotes(\''+rid+'\')" title="Expand notes">⤢</span>';
+      h+='</div></td>';
+      
+      h+='<td style="text-align:right"><button class="rb '+(rec.ar?'rr':'ra')+'" onclick="tArc(\''+rid+'\')">'+(rec.ar?I.res:I.arc)+'</button></td>';
+      h+='</tr>';
+    });
+    h+='</tbody></table></div></div>';
+  }
+  h+='</div>';
+}
+
+// Modals
+if(modal){
+  if(modal.type==='refund'){
+    var sr=modal.rcs;
+    h+='<div class="mo"><div class="mx" onclick="event.stopPropagation()">';
+    h+='<div style="font-size:16px;font-weight:700;color:#f87171;margin-bottom:16px">Create Refund / Chargeback</div>';
+    h+='<p style="font-size:12px;color:#6b6554;margin-bottom:12px">Enter refund amount per record:</p>';
+    h+='<div style="max-height:300px;overflow-y:auto;margin-bottom:16px">';
+    sr.forEach(function(r){
+      h+='<div class="rr"><span style="flex:1;color:#e8dcc8;font-family:JetBrains Mono,monospace;font-size:12px">'+esc(r.on)+'</span><span style="color:#6b6554;font-size:11px">Comm: '+$(r.cm)+'</span><div style="position:relative;display:flex;align-items:center"><span style="position:absolute;left:8px;color:#a08c5a;font-size:12px;pointer-events:none">$</span><input type="number" step="any" class="ii" id="ref-'+r.id+'" style="width:100px;padding-left:20px" value="'+(modal.amts[r.id]||'')+'"></div></div>';
+    });
+    h+='</div><div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid #2a2820">';
+    h+='<span style="font-size:14px;font-weight:700;color:#f87171;font-family:JetBrains Mono,monospace">Refund Total</span>';
+    h+='<div class="mact"><button class="mcn" onclick="closeModal()">Cancel</button><button class="mrf" onclick="cRef()">Create Refund</button></div></div></div></div>';
+  }else if(modal.type==='inv-detail'){
+    var iv=modal.inv;
+    var irs=iv.items?iv.items:iv.rids.map(function(id){return recs.find(function(r){return r.id===id})}).filter(Boolean);
+    h+='<div class="mo" onclick="closeModal()"><div class="mx" onclick="event.stopPropagation()">';
+    h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><span style="font-size:18px;font-weight:700;color:#93c5fd;font-family:Playfair Display,serif">Invoice #'+iv.num+'</span><span class="sbg '+(iv.st==='Paid'?'ispd':'isp')+'">'+iv.st+'</span></div>';
+    h+='<div style="font-size:12px;color:#6b6554;margin-bottom:12px">Created: '+iv.dt+' at '+iv.ts+(iv.pd?' · Paid: '+iv.pd:'')+'</div>';
+    h+='<div style="max-height:300px;overflow-y:auto">';
+    irs.forEach(function(r){h+='<div class="dr"><span style="color:#6b6554">'+esc(r.on)+' — '+r.k+' '+r.g+'g</span><span class="mn" style="color:#e8dcc8">'+$(r.cm)+'</span></div>'});
+    h+='</div><div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid #2a2820;margin-top:12px"><span class="mn cp" style="font-size:16px">Total: '+$(iv.tc)+'</span><button class="mok" onclick="closeModal()">Close</button></div></div></div>';
+  }else if(modal.type==='ref-detail'){
+    var rf=modal.ref;
+    h+='<div class="mo" onclick="closeModal()"><div class="mx" onclick="event.stopPropagation()">';
+    h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><span style="font-size:18px;font-weight:700;color:#fca5a5;font-family:Playfair Display,serif">Refund Details</span><span class="sbg '+(rf.st==='Resolved'?'isrr':'isrp')+'">'+rf.st+'</span></div>';
+    h+='<div style="font-size:12px;color:#6b6554;margin-bottom:12px">Created: '+rf.dt+' at '+rf.ts+(rf.rd?' · Resolved: '+rf.rd:'')+'</div>';
+    h+='<div style="max-height:300px;overflow-y:auto">';
+    rf.items.forEach(function(it){h+='<div class="dr"><span style="color:#6b6554">'+esc(it.on)+'</span><span class="mn" style="color:#f87171">'+$(it.amt)+'</span></div>'});
+    h+='</div><div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid #2a2820;margin-top:12px"><span class="mn cmm" style="font-size:16px">Total: '+$(rf.tot)+'</span><button class="mok" onclick="closeModal()">Close</button></div></div></div>';
+  }else if(modal.type==='notes'){
+    h+='<div class="mo" onclick="saveNotes()"><div class="mx" onclick="event.stopPropagation()" style="max-width:480px">';
+    h+='<div style="font-size:14px;font-weight:700;color:#c9a84c;margin-bottom:12px">Notes — '+esc(modal.on)+'</div>';
+    h+='<textarea id="notes-ta" style="width:100%;min-height:180px;padding:12px;background:#1c1b17;border:1px solid #3d3826;border-radius:8px;color:#e8dcc8;font-size:13px;font-family:\'DM Sans\',sans-serif;outline:none;resize:vertical;line-height:1.6">'+esc(modal.val)+'</textarea>';
+    h+='<div class="mact" style="margin-top:12px"><button class="mcn" onclick="modal=null;R()">Cancel</button><button class="mok" onclick="saveNotes()">Save</button></div></div></div>';
+  }else{
+    h+='<div class="mo" onclick="closeModal()"><div class="mx" onclick="event.stopPropagation()"><p class="mmsg">'+modal.msg+'</p><div class="mact">';
+    if(modal.onConfirm)h+='<button class="mcn" onclick="closeModal()">Cancel</button><button class="mdl" onclick="modal.onConfirm()">Delete</button>';
+    else h+='<button class="mok" onclick="closeModal()">OK</button>';
+    h+='</div></div></div>';
+  }
+}
 
 var activeId=document.activeElement?document.activeElement.id:'';
-var cursorPos=-1; if(activeId&&document.activeElement.selectionStart!==undefined){cursorPos=document.activeElement.selectionStart}
+var cursorPos=-1;
+if(activeId&&document.activeElement.selectionStart!==undefined){cursorPos=document.activeElement.selectionStart}
 
 document.getElementById('app').innerHTML=h;
 
-if(activeId){ var el=document.getElementById(activeId); if(el){el.focus(); if(cursorPos>=0&&el.setSelectionRange){try{el.setSelectionRange(cursorPos,cursorPos)}catch(e){}}} }
+if(activeId){
+  var el=document.getElementById(activeId);
+  if(el){el.focus();if(cursorPos>=0&&el.setSelectionRange){try{el.setSelectionRange(cursorPos,cursorPos)}catch(e){}}}
+}
+
 if(showForm)setTimeout(updateCalcFields,0);
 }
 
-// Start
-initData();
+R();
 </script>
 </body>
 </html>
